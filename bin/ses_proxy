@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require 'pathname'
+require 'rubygems'
+
+file_path = Pathname.new(__FILE__).realpath
+
+require File.join(File.dirname(File.dirname(file_path)), 'ses_proxy.rb')
+libdir = File.join(File.dirname(File.dirname(file_path)), "lib")
+$LOAD_PATH.unshift(libdir) unless $LOAD_PATH.include?(libdir)
+
+begin
+  SesProxy::MainCommand.run
+rescue Exception => e
+  puts e.message
+  if $DEBUG
+    puts $!
+    puts $@
+  end
+end
