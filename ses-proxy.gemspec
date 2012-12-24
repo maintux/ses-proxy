@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.files       = Dir['ses_proxy.rb', 'lib/**/*', 'bin/*']
   s.homepage    = 'https://github.com/maintux/ses-proxy'
   s.has_rdoc    = false
-  s.licenses    = 'GPL-2'
+  s.licenses    = 'MIT'
   s.add_dependency 'clamp'
   s.add_dependency 'json'
   s.add_dependency 'rack'
@@ -17,4 +17,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'aws'
   s.add_dependency 'mail'
   s.add_dependency 'eventmachine'
+  s.add_dependency 'yaml'
+
 end

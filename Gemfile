@@ -7,3 +7,5 @@ gem 'thin'
 gem 'aws'
 gem 'mail'
 gem 'eventmachine'
+gem 'yaml'
+
