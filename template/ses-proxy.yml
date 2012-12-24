@@ -1,0 +1,15 @@
+:aws:
+  :access_key_id: your_access_key_id
+  :secret_access_key: your_secret_access_key
+:smtp_auth:
+  :user: smtp_user
+  :password: smtp_pass
+:test:
+  :from: test@example.com
+  :to: test@example.com
+#:smtp:
+#  :port: 1025
+#  :host: 0.0.0.0
+#:http:
+#  :port: 9292
+#  :host: 0.0.0.0

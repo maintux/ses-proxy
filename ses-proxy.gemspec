@@ -11,4 +11,10 @@ Gem::Specification.new do |s|
   s.has_rdoc    = false
   s.licenses    = 'GPL-2'
   s.add_dependency 'clamp'
+  s.add_dependency 'json'
+  s.add_dependency 'rack'
+  s.add_dependency 'thin'
+  s.add_dependency 'aws'
+  s.add_dependency 'mail'
+  s.add_dependency 'eventmachine'
 end
