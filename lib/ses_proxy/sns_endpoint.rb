@@ -23,7 +23,7 @@ module SesProxy
     end
 
     def sns
-      @sns || AWS::SNS::Client.new(SesProxy::Conf.get[:aws])
+      @sns ||= AWS::SNS::Client.new(SesProxy::Conf.get[:aws])
     end
 
     def confirm_subscription(arn,token)

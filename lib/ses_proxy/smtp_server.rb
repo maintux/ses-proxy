@@ -53,7 +53,7 @@ module SesProxy
     end
 
     def ses
-      @ses || AWS::SimpleEmailService.new(SesProxy::Conf.get[:aws])
+      @ses ||= AWS::SimpleEmailService.new(SesProxy::Conf.get[:aws])
     end
 
     def receive_message
