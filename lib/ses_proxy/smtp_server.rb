@@ -19,6 +19,7 @@ module SesProxy
 
     def receive_sender(sender)
       sender = sender.gsub(/[<>]/,'')
+      @sender = sender
       domains = ses.identities.domains.map(&:identity)
       email_addresses = ses.identities.email_addresses.map(&:identity)
       identity = nil
@@ -28,7 +29,6 @@ module SesProxy
         identity = ses.identities[sender.split('@').last]
       end
       identity&&identity.verified?
-      @sender = sender
     end
 
     def receive_recipient(recipient)
