@@ -1,14 +1,9 @@
-POST / HTTP/1.1
-x-amz-sns-message-type: SubscriptionConfirmation
-x-amz-sns-message-id: 165545c9-2a5c-472c-8df2-7ff2be2b3b1b
-x-amz-sns-topic-arn: arn:aws:sns:us-east-1:123456789012:MyTopic
-x-amz-sns-subscription-arn: arn:aws:sns:us-east-1:123456789012:MyTopic:2bcfbf39-05c3-41de-beaa-fcfcc21c8f55
-Content-Length: 1336
-Content-Type: text/plain; charset=UTF-8
-Host: example.com
-Connection: Keep-Alive
-User-Agent: Amazon Simple Notification Service Agent
+require 'net/http'
+require './lib/ses_proxy/conf'
 
+uri = URI('http://localhost:9292/')
+req = Net::HTTP::Post.new(uri.path)
+req.body = <<-BODY
 {
   "Type" : "SubscriptionConfirmation",
   "MessageId" : "165545c9-2a5c-472c-8df2-7ff2be2b3b1b",
@@ -20,4 +15,16 @@ User-Agent: Amazon Simple Notification Service Agent
   "SignatureVersion" : "1",
   "Signature" : "skvXQIEpH+DcEwjAPg8O9mY8dReBSwksfg2S7WKQcikcNKWLQjwu6A4VbeS0QHVCkhRS7fUQvi2egU3N858fiTDN6bkkOxYDVrY0Ad8L10Hs3zH81mtnPk5uvvolIC1CXGu43obcgFxeL3khZl8IKvO61GWB6jI9b5+gLPoBc1Q=",
   "SigningCertURL" : "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-f3ecfb7224c7233fe7bb5f59f96de52f.pem"
-  }
+}
+BODY
+req.content_type = 'text/plain; charset=UTF-8'
+req['x-amz-sns-message-type'] = "SubscriptionConfirmation"
+req['x-amz-sns-message-id'] = "da41e39f-ea4d-435a-b922-c6aae3915ebe"
+req['x-amz-sns-topic-arn'] = SesProxy::Conf.get[:test][:topic_arn]
+req['x-amz-sns-subscription-arn'] = SesProxy::Conf.get[:test][:subscription_arn]
+
+res = Net::HTTP.start(uri.hostname, uri.port) {|http|
+  http.request(req)
+}
+
+puts res.body

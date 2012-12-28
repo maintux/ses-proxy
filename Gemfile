@@ -7,5 +7,5 @@ gem 'thin'
 gem 'aws'
 gem 'mail'
 gem 'eventmachine'
-gem 'yaml'
-
+gem 'mongo'
+gem 'bson_ext'

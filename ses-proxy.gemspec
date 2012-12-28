@@ -17,6 +17,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'aws'
   s.add_dependency 'mail'
   s.add_dependency 'eventmachine'
-  s.add_dependency 'yaml'
-
+  s.add_dependency 'mongo'
+  s.add_dependency 'bson_ext'
 end

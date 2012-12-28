@@ -47,12 +47,12 @@ module SesProxy
 
     option ["-e","--environment"], "ENVIRONMENT", "Environment", :default => "development"
 
-    option ["-c","--config-file"], "CONFIG_FILE_PATH", "Configuration file", :default => "#{File.join(Dir.home,'.ses-proxy','ses-proxy.yml')}"
+    option ["-c","--config-file"], "CONFIG_FILE", "Configuration file", :default => "#{File.join(Dir.home,'.ses-proxy','ses-proxy.yml')}"
 
     @@env = "development"
 
     def execute
-      check_for_config_file config_file_path
+      check_for_config_file config_file
 
       @@env = environment
 
@@ -71,9 +71,6 @@ module SesProxy
 
       smtp.join
       http.join
-
-      #mr = Rack::MockRequest.new app
-      #puts mr.post("/").body
     end
 
     private
@@ -84,7 +81,7 @@ module SesProxy
           Dir.mkdir(File.join(Dir.home,'.ses-proxy'))
         end
         unless File.exists? path
-          Fileutils.cp File.join(ROOT,"template","ses-proxy.yml").to_s, path
+          FileUtils.cp File.join(ROOT,"template","ses-proxy.yml").to_s, path
           puts "ATTENTION: Edit '#{path}' file with your data and then restart ses_proxy."
           exit
         end
