@@ -37,7 +37,7 @@ module SesProxy
     end
 
     option ["-l","--http-address"], "HTTP_ADDRESS", "HTTP listen address (default: \"0.0.0.0\")"
-    def default_http_host
+    def default_http_address
       if SesProxy::Conf.get[:http] and SesProxy::Conf.get[:http][:host]
         SesProxy::Conf.get[:http][:host]
       else
