@@ -34,6 +34,7 @@ module SesProxy
                   :created_at=>Time.now,
                   :updated_at=>Time.now
                 })
+              end
             elsif sns_obj["notificationType"].eql? "Complaint"
               coll = db['complained']
               sns_obj["complaint"]["complainedRecipients"].each do |recipient|
@@ -43,6 +44,7 @@ module SesProxy
                   :created_at=>Time.now,
                   :updated_at=>Time.now
                 })
+              end
             end
           elsif env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"].eql?"SubscriptionConfirmation" and sns_obj["Type"].eql? "SubscriptionConfirmation"
             sns.confirm_subscription :topic_arn=>confirm_subscription, :token=>sns_obj["TopicArn"], sns_obj["Token"], :authenticate_on_unsubscribe=>"true"
