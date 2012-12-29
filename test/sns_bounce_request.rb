@@ -5,34 +5,14 @@ uri = URI('http://localhost:9292/')
 req = Net::HTTP::Post.new(uri.path)
 req.body = <<-BODY
 {
-  "notificationType": "Bounce",
-  "bounce": {
-    "bounceType":"Permanent",
-    "bounceSubType": "General",
-    "bouncedRecipients":[
-      {
-        "emailAddress":"recipient1@example.com",
-        "diagnosticCode":"smtp; 5.1.0 - Unknown address error 550-'5.1.1 <recipient1@example.com>: Recipient address rejected: User unknown in virtual mailbox table' (delivery attempts: 0)"
-      },
-      {
-        "emailAddress":"recipient2@example.com",
-        "diagnosticCode":"smtp; 5.1.0 - Unknown address error 550-'#5.1.0 Address rejected recipient2@example.com' (delivery attempts: 0)"
-      }
-    ],
-    "timestamp":"2012-05-25T14:59:38.237-07:00",
-    "feedbackId":"00000137860315fd-869464a4-8680-4114-98d3-716fe35851f9-000000"
-  },
-  "mail":{
-    "timestamp":"2012-05-25T14:59:38.237-07:00",
-    "messageId":"00000137860315fd-34208509-5b74-41f3-95c5-22c1edc3c924-000000",
-    "source":"email_1337983178237@amazon.com",
-    "destination":[
-      "recipient1@example.com",
-      "recipient2@example.com",
-      "recipient3@example.com",
-      "recipient4@example.com"
-    ]
-  }
+  "Type" : "Notification",
+  "MessageId" : "cc748646-68d6-467a-8970-35173aa51fd5",
+  "TopicArn" : "#{SesProxy::Conf.get[:test][:topic_arn]}",
+  "Message" : "{\"notificationType\":\"Bounce\",\"bounce\":{\"reportingMTA\":\"dns; a192-11.smtp-out.amazonses.com\",\"bounceType\":\"Permanent\",\"bouncedRecipients\":[{\"emailAddress\":\"recipient1@example.com\",\"status\":\"5.0.0\",\"diagnosticCode\":\"smtp; 5.1.0 - Unknown address error 550-'Requested action not taken: mailbox unavailable' (delivery attempts: 0)\",\"action\":\"failed\"}],\"bounceSubType\":\"General\",\"timestamp\":\"2012-12-29T14:56:01.000Z\",\"feedbackId\":\"0000013be729794c-d792580c-51c7-11e2-8222-7deccfe1af64-000000\"},\"mail\":{\"timestamp\":\"2012-12-29T14:55:51.000Z\",\"source\":\"no-reply@example.com\",\"messageId\":\"0000013be729724c-90281fd0-8cac-42c4-9710-f20d04b14b86-000000\",\"destination\":[\"recipient1@example.com\"]}}\n",
+  "Timestamp" : "2012-12-29T15:11:21.353Z",
+  "SignatureVersion" : "1",
+  "Signature" : "",
+  "SigningCertURL" : "",
 }
 BODY
 req.content_type = 'text/plain; charset=UTF-8'
