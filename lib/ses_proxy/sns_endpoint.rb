@@ -16,6 +16,7 @@ module SesProxy
       end
 
       json_string = req.body.read
+      puts json_string
       sns_obj = nil
 
       begin
@@ -75,12 +76,14 @@ module SesProxy
     end
 
     def check_topic(env)
+      puts env["HTTP_X_AMZ_SNS_TOPIC_ARN"].inspect
       topic_arn = env["HTTP_X_AMZ_SNS_TOPIC_ARN"]
       allowed_topic_arns = SesProxy::Conf.get[:aws][:allowed_topic_arns]
       topic_arn && allowed_topic_arns.include?(topic_arn)
     end
 
     def check_message_type(env)
+      puts env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"].inspect
       message_type = env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"]
       message_type && ["SubscriptionConfirmation","Notification","UnsubscribeConfirmation"].include?(message_type)
     end
