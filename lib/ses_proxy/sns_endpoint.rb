@@ -25,23 +25,23 @@ module SesProxy
         end
         if sns_obj
           if env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"].eql?"Notification"
-            if sns_obj["notificationType"].eql? "Bounce"
+            if sns_obj["Message"]["notificationType"].eql? "Bounce"
               coll = db['bounced']
-              sns_obj["bounce"]["bouncedRecipients"].each do |recipient|
+              sns_obj["Message"]["bounce"]["bouncedRecipients"].each do |recipient|
                 coll.save({
                   :email=>recipient["emailAddress"],
-                  :type=>sns_obj["bounce"]["bounceType"],
+                  :type=>sns_obj["Message"]["bounce"]["bounceType"],
                   :desc=>recipient["diagnosticCode"],
                   :created_at=>Time.now,
                   :updated_at=>Time.now
                 })
               end
-            elsif sns_obj["notificationType"].eql? "Complaint"
+            elsif sns_obj["Message"]["notificationType"].eql? "Complaint"
               coll = db['complained']
-              sns_obj["complaint"]["complainedRecipients"].each do |recipient|
+              sns_obj["Message"]["complaint"]["complainedRecipients"].each do |recipient|
                 coll.save({
                   :email=>recipient["emailAddress"],
-                  :type=>sns_obj["complaint"]["complaintFeedbackType"],
+                  :type=>sns_obj["Message"]["complaint"]["complaintFeedbackType"],
                   :created_at=>Time.now,
                   :updated_at=>Time.now
                 })
