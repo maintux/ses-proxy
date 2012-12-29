@@ -52,9 +52,12 @@ module SesProxy
           end
           [200, {'Content-Type' => 'text/html'}, res]
         else
+          puts "SNS Object is nil"
           return make_error
         end
       rescue Exception => e
+        print "Error! "
+        puts e.message
         return make_error
       end
     end
