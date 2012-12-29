@@ -1,7 +1,7 @@
 require 'rack/request'
 require 'json'
 require 'mongo'
-require 'aws'
+require 'aws-sdk'
 
 include Mongo
 

@@ -1,6 +1,6 @@
 require 'eventmachine'
 require 'mail'
-require 'aws'
+require 'aws-sdk'
 
 module SesProxy
   class SmtpServer < EM::P::SmtpServer

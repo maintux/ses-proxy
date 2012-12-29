@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'json'
   s.add_dependency 'rack'
   s.add_dependency 'thin'
-  s.add_dependency 'aws'
+  s.add_dependency 'aws-sdk'
   s.add_dependency 'mail'
   s.add_dependency 'eventmachine'
   s.add_dependency 'mongo'
