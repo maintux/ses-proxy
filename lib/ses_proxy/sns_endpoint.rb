@@ -47,7 +47,7 @@ module SesProxy
               end
             end
           elsif env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"].eql?"SubscriptionConfirmation" and sns_obj["Type"].eql? "SubscriptionConfirmation"
-            sns.confirm_subscription :topic_arn=>confirm_subscription, :token=>sns_obj["TopicArn"], sns_obj["Token"], :authenticate_on_unsubscribe=>"true"
+            sns.confirm_subscription :topic_arn=>sns_obj["TopicArn"], :token=>sns_obj["Token"], :authenticate_on_unsubscribe=>"true"
           end
           [200, {'Content-Type' => 'text/html'}, res]
         else
