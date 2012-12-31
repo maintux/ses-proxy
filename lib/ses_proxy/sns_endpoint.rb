@@ -2,11 +2,21 @@ require 'rack/request'
 require 'json'
 require 'mongo'
 require 'aws-sdk'
+require 'net/http'
+require 'base64'
+require 'openssl'
 
 include Mongo
 
 module SesProxy
   class SnsEndpoint
+
+    CERTS_URI = {
+      "us-east-1" => "http://sns.us-east-1.amazonaws.com/SimpleNotificationService.pem",
+      "us-west-1" => "http://sns.us-west-1.amazonaws.com/SimpleNotificationService.pem",
+      "eu-west-1" => "http://sns.eu-west-1.amazonaws.com/SimpleNotificationService.pem",
+      "ap-southeast-1" => "http://sns.ap-southeast-1.amazonaws.com/SimpleNotificationService.pem"
+    }
 
     def call(env)
       req = Rack::Request.new(env)
@@ -24,6 +34,10 @@ module SesProxy
           sns_obj = JSON.parse json_string
         end
         if sns_obj
+          unless check_message_signature(sns_obj)
+            puts "Error in message signature"
+            return make_error
+          end
           message = JSON.parse sns_obj["Message"]
           unless message
             return make_error
@@ -67,6 +81,93 @@ module SesProxy
     end
 
     private
+
+    def check_message_signature(sns_obj)
+      if sns_obj["Type"].eql? "Notification"
+        string = get_notification_canonical_string(sns_obj)
+      else
+        string = get_subscription_confirmation_canonical_string(sns_obj)
+      end
+      region = sns_obj["TopicArn"].split(":")[3]
+      signature = sns_obj["Signature"]
+      #openssl x509 -in CERT -pubkey -noout > pub_key
+      pub_key = OpenSSL::X509::Certificate.new(File.read(get_cert(region))).public_key
+      #base64 -i -d signature > plain_signature
+      plain_signature = Base64.decode64(signature)
+      #openssl dgst -sha1 -verify pub -signature sigraw MESS
+      pub_key.verify(OpenSSL::Digest::SHA1.new, plain_signature, string)
+    end
+
+    def get_cert(region)
+      unless File.exists? File.join("/","tmp","#{region}_sns_cert.pem")
+        res = fetch CERTS_URI[region]
+        puts res.inspect
+        if res and not res.eql?""
+          open(File.join("/","tmp","#{region}_sns_cert.pem"), "wb") do |file|
+            file.write(res)
+          end
+        else
+          raise Exception, "Unable to get SNS Certificate!"
+        end
+      end
+      File.join("/","tmp","#{region}_sns_cert.pem")
+    end
+
+    def get_notification_canonical_string(sns_obj)
+      string = "Message\n"
+      string = "#{string}#{sns_obj["Message"]}\n"
+      string = "#{string}MessageId\n"
+      string = "#{string}#{sns_obj["MessageId"]}\n"
+      if sns_obj["Subject"]
+        string = "#{string}Subject\n"
+        string = "#{string}#{sns_obj["Subject"]}\n"
+      end
+      string = "#{string}Timestamp\n"
+      string = "#{string}#{sns_obj["Timestamp"]}\n"
+      string = "#{string}TopicArn\n"
+      string = "#{string}#{sns_obj["TopicArn"]}\n"
+      string = "#{string}Type\n"
+      string = "#{string}#{sns_obj["Type"]}\n"
+      string.force_encoding("UTF-8")
+    end
+
+    def get_subscription_confirmation_canonical_string(sns_obj)
+      string = "Message\n"
+      string = "#{string}#{sns_obj["Message"]}\n"
+      string = "#{string}MessageId\n"
+      string = "#{string}#{sns_obj["MessageId"]}\n"
+      string = "#{string}SubscribeURL\n"
+      string = "#{string}#{sns_obj["SubscribeURL"]}\n"
+      string = "#{string}Timestamp\n"
+      string = "#{string}#{sns_obj["Timestamp"]}\n"
+      string = "#{string}Token\n"
+      string = "#{string}#{sns_obj["Token"]}\n"
+      string = "#{string}TopicArn\n"
+      string = "#{string}#{sns_obj["TopicArn"]}\n"
+      string = "#{string}Type\n"
+      string = "#{string}#{sns_obj["Type"]}\n"
+      string.force_encoding("UTF-8")
+    end
+
+    def fetch(uri_str, limit = 10)
+      raise Exception, 'too many HTTP redirects' if limit == 0
+
+      response = Net::HTTP.get_response(URI(uri_str))
+
+      case response
+      when Net::HTTPSuccess then
+        response.body
+      when Net::HTTPRedirection then
+        puts response.inspect
+        location = response['location']
+        url = URI.parse(location)
+        location = "#{URI(uri_str).scheme}://#{URI(uri_str).host}#{location}" unless url.host
+        warn "redirected to #{location}"
+        fetch(location, limit - 1)
+      else
+        response.value
+      end
+    end
 
     def make_error
       [422, {'Content-Type' => 'text/html'}, ["Wrong request!"]]
