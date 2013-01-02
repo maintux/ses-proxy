@@ -6,4 +6,5 @@ module SesProxy
   autoload :Conf, 'ses_proxy/conf'
   autoload :Bounce, 'ses_proxy/models/bounce'
   autoload :Complaint, 'ses_proxy/models/complaint'
+  autoload :Email, 'ses_proxy/models/email'
 end

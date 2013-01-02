@@ -15,10 +15,11 @@ def send_plain_to_from(to, from, subject, message)
   end
 
   mail = Mail.new do
-    from    from
-    to      to
-    subject subject
-    body    message
+    from(from)
+    to(to)
+    subject(subject)
+    body(message)
+    headers({"X-Sender-System" => "SES Proxy Test"})
   end
   mail.deliver!
 

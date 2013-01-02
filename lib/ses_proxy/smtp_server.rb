@@ -32,7 +32,7 @@ module SesProxy
     end
 
     def receive_recipient(recipient)
-      recipients << recipient
+      recipients << recipient.gsub(/[<>]/,'')
       true
     end
 
@@ -42,7 +42,7 @@ module SesProxy
     end
 
     def recipients
-      @recipients || []
+      @recipients ||= []
     end
 
     def sender
@@ -64,20 +64,25 @@ module SesProxy
     def receive_message
       return false unless verified
       bounced = Bounce.where({:email=>recipients}).map(&:email)
+      mail = Mail.read_from_string(message)
       #TODO: Define policy for retry when bounce is not permanent
       actual_recipients = recipients - bounced
+      actual_cc_addrs = mail.cc_addrs - bounced
+      actual_bcc_addrs = mail.bcc_addrs - bounced
       if actual_recipients.any?
-        mail = Mail.read_from_string(message)
         mail.to = actual_recipients.uniq.join(",")
+        mail.cc = actual_cc_addrs.uniq.join(",")
+        mail.bcc = actual_bcc_addrs.uniq.join(",")
         record = Email.new({
           :sender => sender,
           :recipients => actual_recipients.uniq.join(","),
           :subject => mail.subject,
           :body => mail.body.decoded,
-          :system => mail.headers['X-Sender-System']||"Unknown",
+          :system => mail['X-Sender-System']||"Unknown",
           :created_at => Time.now,
           :updated_at => Time.now
         })
+        record.save!
         begin
           ses.send_raw_email(mail.to_s)
           true
@@ -86,6 +91,7 @@ module SesProxy
           false
         end
       else
+        puts "No valid recipients!"
         true
       end
     end
