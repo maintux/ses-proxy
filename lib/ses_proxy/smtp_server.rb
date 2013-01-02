@@ -32,12 +32,17 @@ module SesProxy
     end
 
     def receive_recipient(recipient)
+      recipients << recipient
       true
     end
 
     def receive_data_chunk(data)
       @message = "#{@message}\n#{data.join("\n")}"
       true
+    end
+
+    def recipients
+      @recipients || []
     end
 
     def sender
@@ -58,15 +63,30 @@ module SesProxy
 
     def receive_message
       return false unless verified
-      #Check if recipient are blacklisted
-      mail = Mail.read_from_string(message)
-      #mail.to
-      begin
-        ses.send_raw_email(mail.to_s)
+      bounced = Bounce.where({:email=>recipients}).map(&:email)
+      #TODO: Define policy for retry when bounce is not permanent
+      actual_recipients = recipients - bounced
+      if actual_recipients.any?
+        mail = Mail.read_from_string(message)
+        mail.to = actual_recipients.uniq.join(",")
+        record = Email.new({
+          :sender => sender,
+          :recipients => actual_recipients.uniq.join(","),
+          :subject => mail.subject,
+          :body => mail.body.decoded,
+          :system => mail.headers['X-Sender-System']||"Unknown",
+          :created_at => Time.now,
+          :updated_at => Time.now
+        })
+        begin
+          ses.send_raw_email(mail.to_s)
+          true
+        rescue Exception => e
+          puts e.message
+          false
+        end
+      else
         true
-      rescue Exception => e
-        puts e.message
-        false
       end
     end
 
