@@ -4,6 +4,7 @@ require 'rack'
 require 'eventmachine'
 require 'thread'
 require 'fileutils'
+require 'mongoid'
 
 module SesProxy
 
@@ -48,13 +49,16 @@ module SesProxy
     option ["-e","--environment"], "ENVIRONMENT", "Environment", :default => "development"
 
     option ["-c","--config-file"], "CONFIG_FILE", "Configuration file", :default => "#{File.join(Dir.home,'.ses-proxy','ses-proxy.yml')}"
+    option ["-m","--mongoid-config-file"], "MONGOID_CONFIG_FILE", "Mongoid configuration file", :default => "#{File.join(Dir.home,'.ses-proxy','mongoid.yml')}"
 
     @@env = "development"
 
     def execute
       check_for_config_file config_file
+      check_for_mongoid_config_file mongoid_config_file
 
       @@env = environment
+      Mongoid.load! mongoid_config_file, @@env
 
       smtp = Thread.new do
         EM.run{ SesProxy::SmtpServer.start smtp_host, smtp_port }
@@ -82,6 +86,23 @@ module SesProxy
         end
         unless File.exists? path
           FileUtils.cp File.join(ROOT,"template","ses-proxy.yml").to_s, path
+          puts "ATTENTION: Edit '#{path}' file with your data and then restart ses_proxy."
+          exit
+        end
+      else
+        unless File.exists? path
+          raise ArgumentError, "Configuration file '#{path}' not found!"
+        end
+      end
+    end
+
+    def check_for_mongoid_config_file(path)
+      if path.eql? File.join(Dir.home,'.ses-proxy','mongoid.yml').to_s
+        unless File.directory? File.join(Dir.home,'.ses-proxy')
+          Dir.mkdir(File.join(Dir.home,'.ses-proxy'))
+        end
+        unless File.exists? path
+          FileUtils.cp File.join(ROOT,"template","mongoid.yml").to_s, path
           puts "ATTENTION: Edit '#{path}' file with your data and then restart ses_proxy."
           exit
         end

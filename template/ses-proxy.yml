@@ -11,10 +11,6 @@
   :to: ["test@example.com"]
   :topic_arn: "arn:aws:sns:us-east-1:123456789012:MyTopic"
   :subscription_arn: "arn:aws:sns:us-east-1:123456789012:MyTopic:2bcfbf39-05c3-41de-beaa-fcfcc21c8f55"
-:db:
-  :name: ses-proxy
-  :host: localhost
-  :port: 27017
 #:smtp:
 #  :port: 1025
 #  :host: 0.0.0.0

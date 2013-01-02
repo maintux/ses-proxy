@@ -1,12 +1,9 @@
 require 'rack/request'
 require 'json'
-require 'mongo'
 require 'aws-sdk'
 require 'net/http'
 require 'base64'
 require 'openssl'
-
-include Mongo
 
 module SesProxy
   class SnsEndpoint
@@ -44,25 +41,35 @@ module SesProxy
           end
           if env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"].eql?"Notification"
             if message["notificationType"].eql? "Bounce"
-              coll = db['bounced']
               message["bounce"]["bouncedRecipients"].each do |recipient|
-                coll.save({
-                  :email=>recipient["emailAddress"],
-                  :type=>message["bounce"]["bounceType"],
-                  :desc=>recipient["diagnosticCode"],
-                  :created_at=>Time.now,
-                  :updated_at=>Time.now
-                })
+                if record = Bounce.where(:email => recipient["emailAddress"]).first
+                  record.updated_at = Time.now
+                  record.save!
+                else
+                  record = Bounce.new({
+                    :email => recipient["emailAddress"],
+                    :type => message["bounce"]["bounceType"],
+                    :desc => recipient["diagnosticCode"],
+                    :created_at => Time.now,
+                    :updated_at => Time.now
+                  })
+                  record.save!
+                end
               end
             elsif message["notificationType"].eql? "Complaint"
-              coll = db['complained']
               message["complaint"]["complainedRecipients"].each do |recipient|
-                coll.save({
-                  :email=>recipient["emailAddress"],
-                  :type=>message["complaint"]["complaintFeedbackType"],
-                  :created_at=>Time.now,
-                  :updated_at=>Time.now
-                })
+                if record = Complaint.where(:email => recipient["emailAddress"]).first
+                  record.updated_at = Time.now
+                  record.save!
+                else
+                  record = Complaint.new({
+                    :email=>recipient["emailAddress"],
+                    :type=>message["complaint"]["complaintFeedbackType"],
+                    :created_at=>Time.now,
+                    :updated_at=>Time.now
+                  })
+                  record.save!
+                end
               end
             end
           elsif env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"].eql?"SubscriptionConfirmation" and sns_obj["Type"].eql? "SubscriptionConfirmation"
@@ -175,12 +182,6 @@ module SesProxy
 
     def sns
       @sns ||= AWS::SNS::Client.new(SesProxy::Conf.get[:aws])
-    end
-
-    def db
-      @client ||= MongoClient.new(SesProxy::Conf.get[:db][:host], SesProxy::Conf.get[:db][:port])
-      @db ||= @client[SesProxy::Conf.get[:db][:name]]
-      return @db
     end
 
     def check_topic(env)

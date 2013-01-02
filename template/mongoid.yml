@@ -1,0 +1,12 @@
+development:
+  sessions:
+    default:
+      database: ses-proxy
+      hosts:
+        - localhost:27017
+production:
+  sessions:
+    default:
+      database: ses-proxy
+      hosts:
+        - localhost:27017

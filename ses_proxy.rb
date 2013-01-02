@@ -4,4 +4,6 @@ module SesProxy
   autoload :SnsEndpoint, 'ses_proxy/sns_endpoint'
   autoload :SmtpServer, 'ses_proxy/smtp_server'
   autoload :Conf, 'ses_proxy/conf'
+  autoload :Bounce, 'ses_proxy/models/bounce'
+  autoload :Complaint, 'ses_proxy/models/complaint'
 end
