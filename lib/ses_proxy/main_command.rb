@@ -1,10 +1,11 @@
-
 require 'clamp'
 require 'rack'
 require 'eventmachine'
 require 'thread'
 require 'fileutils'
 require 'mongoid'
+
+require './app/web_panel'
 
 module SesProxy
 
@@ -67,7 +68,10 @@ module SesProxy
       http = Thread.new do
         app = Rack::Builder.new do
           use Rack::Reloader, 0 if  @@env.eql?"development"
-          run SesProxy::SnsEndpoint.new
+          map "/sns_endpoint" do
+            run SesProxy::SnsEndpoint.new
+          end
+          run Sinatra::Application
         end.to_app
         server = Rack::Server.new :app=>app, :environment=>environment, :server=>"thin", :Port=>http_port, :Host=>http_address
         server.start

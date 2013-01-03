@@ -1,0 +1,20 @@
+!!! 5
+%html
+  %head
+    %title SES Proxy WebPanel
+    %link(rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css" media="screen")
+    %link(rel="icon" type="image/ico" href="https://awsmedia.s3.amazonaws.com/favicon.ico")
+    %link(rel="shortcut icon" type="image/ico" href="https://awsmedia.s3.amazonaws.com/favicon.ico")
+  %body
+    %div.container
+      %div.navbar
+        %div.navbar-inner
+          %a.brand(href="#") SES Proxy WebPanel
+          %ul.nav.nav-pills
+            %li{:class => ('active' if @menu_item.eql? "mails")}
+              %a(href="/") Sent Emails
+            %li{:class => ('active' if @menu_item.eql? "bounces")}
+              %a(href="/bounces") Bounced Addresses
+      = yield
+    %script(src="http://code.jquery.com/jquery-latest.js")
+    %script(src="bootstrap/js/bootstrap.min.js")
