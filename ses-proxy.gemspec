@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'mail'
   s.add_dependency 'eventmachine'
   s.add_dependency 'mongoid'
+  s.add_dependency 'haml'
   s.add_dependency 'sinatra'
   s.add_dependency 'kaminari'
   s.add_dependency 'padrino-helpers'
