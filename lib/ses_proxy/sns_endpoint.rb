@@ -35,11 +35,11 @@ module SesProxy
             puts "Error in message signature"
             return make_error
           end
-          message = JSON.parse sns_obj["Message"]
-          unless message
-            return make_error
-          end
           if env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"].eql?"Notification"
+            message = JSON.parse sns_obj["Message"]
+            unless message
+              return make_error
+            end
             if message["notificationType"].eql? "Bounce"
               message["bounce"]["bouncedRecipients"].each do |recipient|
                 if record = Bounce.where(:email => recipient["emailAddress"]).first
