@@ -1,0 +1,23 @@
+%form.form-horizontal(data-ajax-url="#{@chart_url}" data-chart="chartdiv")
+  %fieldset(style="text-align: left")
+    %legend Search:
+  %div(style="display: inline-block;vertical-align: middle;")
+    %label Text
+    %input.span4(type="text" name="q" value="#{@q}" placeholder="Type something…")
+  %div.input-append.date(data-date="#{@s||Time.now.strftime('%d/%m/%Y')}" data-date-format="dd-mm-yyyy")
+    %label From
+    %input.span2(size="16" type="text" name="s" value="#{@s}" placeholder="dd-mm-yyyy")
+    %span.add-on
+      %i.icon-th
+  %div.input-append.date(data-date="#{@e||Time.now.strftime('%d/%m/%Y')}" data-date-format="dd-mm-yyyy")
+    %label To
+    %input.span2(size="16" type="text" name="e" value="#{@e}" placeholder="dd-mm-yyyy")
+    %span.add-on
+      %i.icon-th
+  %div(style="display: inline-block;vertical-align: middle;")
+    %label Per page
+    %select.span2(name="per")
+      -5.times do |i|
+        %option{:value=>(i+1)*10, :selected=>("selected" if @per.to_i.eql?((i+1)*10))}= (i+1)*10
+  %div.form-actions
+    %button.btn(type="submit") Search

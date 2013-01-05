@@ -1,0 +1,16 @@
+.input-append label{
+  position: relative;
+  top: 5px;
+  margin-right: 5px;
+}
+.form-actions{
+  padding: 9px 10px 10px;
+  text-align: right;
+}
+.loader-div{
+  background: url(/images/loader.gif) no-repeat;
+  position: relative;
+  margin: 0 auto;
+  width: 50px;
+  height: 50px;
+}

@@ -3,10 +3,12 @@
   %head
     %title SES Proxy WebPanel
     %link(rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css" media="screen")
+    %link(rel="stylesheet" type="text/css" href="datepicker/css/datepicker.css" media="screen")
+    %link(rel="stylesheet" type="text/css" href="css/application.css" media="screen")
     %link(rel="icon" type="image/ico" href="https://awsmedia.s3.amazonaws.com/favicon.ico")
     %link(rel="shortcut icon" type="image/ico" href="https://awsmedia.s3.amazonaws.com/favicon.ico")
   %body
-    %div.container
+    %div.container-fluid
       %div.navbar
         %div.navbar-inner
           %a.brand(href="#") SES Proxy WebPanel
@@ -18,3 +20,6 @@
       = yield
     %script(src="http://code.jquery.com/jquery-latest.js")
     %script(src="bootstrap/js/bootstrap.min.js")
+    %script(src="datepicker/js/bootstrap-datepicker.js")
+    %script(src="highcharts/highcharts.js")
+    %script(src="js/application.js")

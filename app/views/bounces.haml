@@ -1,8 +1,6 @@
-%h1(style="text-align: center; margin-bottom:20px;") Bounced Addresses
-%form.form-search(style="text-align: right")
-  %div.input-append
-    %input.span4.search-query(type="text" name="q")
-    %button.btn(type="submit") Search
+%h1.page-title(style="text-align: center; margin-bottom:20px;") Bounced Addresses
+= haml :_search_form
+= haml :_chart
 %table.table.table-striped(style="table-layout:fixed")
   %colgoup
     %col(width="25%")
