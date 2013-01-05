@@ -63,7 +63,7 @@ module SesProxy
 
     def receive_message
       return false unless verified
-      bounced = Bounce.where({:email=>recipients}).map(&:email)
+      bounced = Bounce.where({:email=>{"$in"=>recipients}}).map(&:email)
       mail = Mail.read_from_string(message)
       #TODO: Define policy for retry when bounce is not permanent
       actual_recipients = recipients - bounced
@@ -87,6 +87,7 @@ module SesProxy
           ses.send_raw_email(mail.to_s)
           true
         rescue Exception => e
+          print "Error! "
           puts e.message
           false
         end
