@@ -103,7 +103,7 @@ def mails_query
   @e = params[:e]||Date.today.strftime("%d-%m-%Y")
   if @q.nil? or @q.eql?""
     if valid_date(@s) and valid_date(@e)
-      mails = SesProxy::Email.any_of("$and"=>[{:created_at=>{"$gte"=>string_to_date(@s)}}, {:created_at=>{"$lte"=>string_to_date(@e)}}])
+      mails = SesProxy::Email.any_of(:created_at=>{'$gte' => string_to_date(@s),'$lt' => string_to_date(@e)})
     elsif valid_date(@s)
       mails = SesProxy::Email.any_of(:created_at=>{"$gte"=>string_to_date(@s)})
     elsif valid_date(@e)
@@ -113,7 +113,7 @@ def mails_query
     end
   else
     if valid_date(@s) and valid_date(@e)
-      mails = SesProxy::Email.any_of("$and"=>[{:created_at=>{"$gte"=>string_to_date(@s)}}, {:created_at=>{"$lte"=>string_to_date(@e)}}], "$or" => [{:recipients => /.*#{@q}.*/i },{:sender => /.*#{@q}.*/i },{:system => /.*#{@q}.*/i },{:subject => /.*#{@q}.*/i }])
+      mails = SesProxy::Email.any_of(:created_at=>{'$gte' => string_to_date(@s),'$lt' => string_to_date(@e)}, "$or" => [{:recipients => /.*#{@q}.*/i },{:sender => /.*#{@q}.*/i },{:system => /.*#{@q}.*/i },{:subject => /.*#{@q}.*/i }])
     elsif valid_date(@s)
       mails = SesProxy::Email.any_of(:created_at=>{"$gte"=>string_to_date(@s)}, "$or" => [{:recipients => /.*#{@q}.*/i },{:sender => /.*#{@q}.*/i },{:system => /.*#{@q}.*/i },{:subject => /.*#{@q}.*/i }])
     elsif valid_date(@e)
@@ -130,7 +130,7 @@ def bounces_query
   @e = params[:e]||Date.today.strftime("%d-%m-%Y")
   if @q.nil? or @q.eql?""
     if valid_date(@s) and valid_date(@e)
-      bounces = SesProxy::Bounce.any_of("$and"=>[{:created_at=>{"$gte"=>string_to_date(@s)}}, {:created_at=>{"$lte"=>string_to_date(@e)}}])
+      bounces = SesProxy::Bounce.any_of(:created_at=>{'$gte' => string_to_date(@s),'$lt' => string_to_date(@e)})
     elsif valid_date(@s)
       bounces = SesProxy::Bounce.any_of(:created_at=>{"$gte"=>string_to_date(@s)})
     elsif valid_date(@e)
@@ -140,7 +140,7 @@ def bounces_query
     end
   else
     if valid_date(@s) and valid_date(@e)
-      bounces = SesProxy::Bounce.any_of("$and"=>[{:created_at=>{"$gte"=>string_to_date(@s)}}, {:created_at=>{"$lte"=>string_to_date(@e)}}], "$or" => [{:email => /.*#{@q}.*/i },{ :type => /.*#{@q}.*/i },{ :desc => /.*#{@q}.*/i }])
+      bounces = SesProxy::Bounce.any_of(:created_at=>{'$gte' => string_to_date(@s),'$lt' => string_to_date(@e)}, "$or" => [{:email => /.*#{@q}.*/i },{ :type => /.*#{@q}.*/i },{ :desc => /.*#{@q}.*/i }])
     elsif valid_date(@s)
       bounces = SesProxy::Bounce.any_of(:created_at=>{"$gte"=>string_to_date(@s)}, "$or" => [{:email => /.*#{@q}.*/i },{ :type => /.*#{@q}.*/i },{ :desc => /.*#{@q}.*/i }])
     elsif valid_date(@e)
