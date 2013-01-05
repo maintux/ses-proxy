@@ -4,13 +4,14 @@ require 'eventmachine'
 require 'thread'
 require 'fileutils'
 require 'mongoid'
+require 'daemons'
+require 'tmpdir'
 
 require './app/web_panel'
 
 module SesProxy
 
   class StartCommand < Clamp::Command
-
     option ["-s","--smtp-port"], "SMTP_PORT", "SMTP listen port (default: \"1025\")"
     def default_smtp_port
       if SesProxy::Conf.get[:smtp] and SesProxy::Conf.get[:smtp][:port]
@@ -52,6 +53,8 @@ module SesProxy
     option ["-c","--config-file"], "CONFIG_FILE", "Configuration file", :default => "#{File.join(Dir.home,'.ses-proxy','ses-proxy.yml')}"
     option ["-m","--mongoid-config-file"], "MONGOID_CONFIG_FILE", "Mongoid configuration file", :default => "#{File.join(Dir.home,'.ses-proxy','mongoid.yml')}"
 
+    option ["-d","--demonize"], :flag, "Demonize application", :default => false
+
     @@env = "development"
 
     def execute
@@ -61,24 +64,38 @@ module SesProxy
       @@env = environment
       Mongoid.load! mongoid_config_file, @@env
 
-      smtp = Thread.new do
-        EM.run{ SesProxy::SmtpServer.start smtp_host, smtp_port }
-      end
+      app = Rack::Builder.new do
+        use Rack::Reloader, 0 if  @@env.eql?"development"
+        map "/sns_endpoint" do
+          run SesProxy::SnsEndpoint.new
+        end
+        run Sinatra::Application
+      end.to_app
+      options = {:app=>app, :environment=>environment, :server=>"thin", :Port=>http_port, :Host=>http_address}
+      server = Rack::Server.new options
 
-      http = Thread.new do
-        app = Rack::Builder.new do
-          use Rack::Reloader, 0 if  @@env.eql?"development"
-          map "/sns_endpoint" do
-            run SesProxy::SnsEndpoint.new
-          end
-          run Sinatra::Application
-        end.to_app
-        server = Rack::Server.new :app=>app, :environment=>environment, :server=>"thin", :Port=>http_port, :Host=>http_address
-        server.start
+      if demonize?
+        options = {:app_name => "ses_proxy", :dir_mode=>:normal, :dir=>Dir.tmpdir, :multiple=>true}
+        group = Daemons::ApplicationGroup.new('ses_proxy', options)
+        options[:mode] = :proc
+        options[:proc] = Proc.new { EM.run{ SesProxy::SmtpServer.start smtp_host, smtp_port } }
+        pid = Daemons::PidFile.new Dir.tmpdir, "ses_proxy_smtp"
+        @smtp = Daemons::Application.new(group, options, pid)
+        options[:proc] = Proc.new { server.start }
+        pid = Daemons::PidFile.new Dir.tmpdir, "ses_proxy_http"
+        @http = Daemons::Application.new(group, options, pid)
+        @smtp.start
+        @http.start
+      else
+        @smtp = Thread.new do
+          EM.run{ SesProxy::SmtpServer.start smtp_host, smtp_port }
+        end
+        @http = Thread.new do
+          server.start
+        end
+        @smtp.join
+        @http.join
       end
-
-      smtp.join
-      http.join
     end
 
     private
@@ -116,14 +133,17 @@ module SesProxy
         end
       end
     end
-
   end
 
   class StopCommand < Clamp::Command
-
     def execute
+      options = {:app_name => "ses_proxy", :dir_mode=>:normal, :dir=>Dir.tmpdir, :multiple=>true}
+      group = Daemons::ApplicationGroup.new('ses_proxy', options)
+      group.setup
+      group.applications.each do |application|
+        application.stop
+      end
     end
-
   end
 
   class MainCommand < Clamp::Command
