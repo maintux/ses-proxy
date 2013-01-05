@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Massimo Maino"]
   s.email       = 'maintux@gmail.com'
   s.executables = ['ses-proxy']
-  s.files       = Dir['ses_proxy.rb', 'lib/**/*', 'bin/*']
+  s.files       = Dir['ses_proxy.rb', 'lib/**/*', 'bin/*', 'app/**/*', 'template/*']
   s.homepage    = 'https://github.com/maintux/ses-proxy'
   s.has_rdoc    = false
   s.licenses    = 'MIT'
