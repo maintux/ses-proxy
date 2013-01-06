@@ -14,7 +14,7 @@ SMTP Proxy for Amazon Simple Email Service with bounce and complaints support
         start                         Start proxy
         stop                          Stop proxy
 
-### *Start command
+###Start command
 
     ses_proxy start [OPTIONS]
 
