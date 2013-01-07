@@ -27,6 +27,7 @@ SMTP Proxy for Amazon Simple Email Service with bounce and complaints support
         -c, --config-file CONFIG_FILE Configuration file (default: "/home/user/.ses-proxy/ses-proxy.yml")
         -m, --mongoid-config-file MONGOID_CONFIG_FILE Mongoid configuration file (default: "/home/user/.ses-proxy/mongoid.yml")
         -d, --demonize                Demonize application (default: false)
+        --pid-dir PID_DIR             Pid Directory (default: "/tmp")
 
 When you start ses\_proxy for the first time, two configuration files will be created.
 The first one is the configuration for MongoDB server (/home/user/.ses-proxy/mongoid.yml). You can edit it if your server runs on a different host.

@@ -7,7 +7,7 @@ require 'mongoid'
 require 'daemons'
 require 'tmpdir'
 
-require './app/web_panel'
+require File.join SesProxy::ROOT, 'app', 'web_panel'
 
 module SesProxy
 
@@ -55,6 +55,8 @@ module SesProxy
 
     option ["-d","--demonize"], :flag, "Demonize application", :default => false
 
+    option ["--pid-dir"], "PID_DIR", "Pid Directory", :default => Dir.tmpdir
+
     @@env = "development"
 
     def execute
@@ -75,14 +77,14 @@ module SesProxy
       server = Rack::Server.new options
 
       if demonize?
-        options = {:app_name => "ses_proxy", :dir_mode=>:normal, :dir=>Dir.tmpdir, :multiple=>true}
+        options = {:app_name => "ses_proxy", :dir_mode=>:normal, :dir=>pid_dir, :multiple=>true}
         group = Daemons::ApplicationGroup.new('ses_proxy', options)
         options[:mode] = :proc
         options[:proc] = Proc.new { EM.run{ SesProxy::SmtpServer.start smtp_host, smtp_port } }
-        pid = Daemons::PidFile.new Dir.tmpdir, "ses_proxy_smtp"
+        pid = Daemons::PidFile.new pid_dir, "ses_proxy_smtp"
         @smtp = Daemons::Application.new(group, options, pid)
         options[:proc] = Proc.new { server.start }
-        pid = Daemons::PidFile.new Dir.tmpdir, "ses_proxy_http"
+        pid = Daemons::PidFile.new pid_dir, "ses_proxy_http"
         @http = Daemons::Application.new(group, options, pid)
         @smtp.start
         @http.start
@@ -136,8 +138,10 @@ module SesProxy
   end
 
   class StopCommand < Clamp::Command
+    option ["--pid-dir"], "PID_DIR", "Pid Directory", :default => Dir.tmpdir
+
     def execute
-      options = {:app_name => "ses_proxy", :dir_mode=>:normal, :dir=>Dir.tmpdir, :multiple=>true}
+      options = {:app_name => "ses_proxy", :dir_mode=>:normal, :dir=>pid_dir, :multiple=>true}
       group = Daemons::ApplicationGroup.new('ses_proxy', options)
       group.setup
       group.applications.each do |application|
