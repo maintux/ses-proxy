@@ -63,8 +63,8 @@ module SesProxy
 
     def receive_message
       return false unless verified
-      bounced = Bounce.where({:email=>{"$in"=>recipients}}).map(&:email)
       mail = Mail.read_from_string(message)
+      bounced = Bounce.where({:email=>{"$in"=>recipients|mail.cc_addrs|mail.bcc_addrs}}).map(&:email)
       #TODO: Define policy for retry when bounce is not permanent
       actual_recipients = recipients - bounced
       actual_cc_addrs = mail.cc_addrs - bounced
