@@ -1,7 +1,7 @@
 require 'net/http'
 require './lib/ses_proxy/conf'
 
-uri = URI('http://localhost:9292/')
+uri = URI('http://localhost:9292/sns_endpoint')
 req = Net::HTTP::Post.new(uri.path)
 req.body = <<-BODY
 {
