@@ -69,6 +69,15 @@ module SesProxy
       actual_recipients = recipients - bounced
       actual_cc_addrs = mail.cc_addrs - bounced
       actual_bcc_addrs = mail.bcc_addrs - bounced
+      original_number = recipients.size+mail.cc_addrs.size+mail.bcc_addrs.size
+      filtered_number = actual_recipients.size+actual_cc_addrs.size+actual_bcc_addrs.size
+      record = RecipientsNumber.new({
+        :original=>original_number,
+        :filtered=>filtered_number,
+        :created_at => Time.now,
+        :updated_at => Time.now
+      })
+      record.save!
       if actual_recipients.any?
         mail.to = actual_recipients.uniq.join(",")
         mail.cc = actual_cc_addrs.uniq.join(",")
@@ -85,15 +94,28 @@ module SesProxy
         record.save!
         begin
           ses.send_raw_email(mail.to_s)
-          true
         rescue Exception => e
           print "Error! "
           puts e.message
-          false
+          return false
         end
       else
         puts "No valid recipients!"
-        true
+      end
+      if not original_number.eql? filtered_number
+        mail.to = (recipients&bounced).uniq.join(",")
+        mail.cc = (mail.cc_addrs&bounced).uniq.join(",")
+        mail.bcc = (mail.bcc_addrs&bounced).uniq.join(",")
+        record = BouncedEmail.new({
+          :sender => sender,
+          :recipients => (recipients&bounced).uniq.join(","),
+          :subject => mail.subject,
+          :body => mail.body.decoded,
+          :system => mail['X-Sender-System']||"Unknown",
+          :created_at => Time.now,
+          :updated_at => Time.now
+        })
+        record.save!
       end
     end
 
