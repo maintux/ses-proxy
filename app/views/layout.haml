@@ -15,6 +15,8 @@
           %ul.nav.nav-pills
             %li{:class => ('active' if @menu_item.eql? "mails")}
               %a(href="/") Sent Emails
+            %li{:class => ('active' if @menu_item.eql? "bounced_mails")}
+              %a(href="/bounced_mails") Bounced Emails
             %li{:class => ('active' if @menu_item.eql? "bounces")}
               %a(href="/bounces") Bounced Addresses
       = yield

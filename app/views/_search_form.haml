@@ -1,9 +1,10 @@
 %form.form-horizontal(data-ajax-url="#{@chart_url}" data-chart="chartdiv")
   %fieldset(style="text-align: left")
     %legend Search:
-  %div(style="display: inline-block;vertical-align: middle;")
-    %label Text
-    %input.span4(type="text" name="q" value="#{@q}" placeholder="Type something…")
+  -if @menu_item.eql? "mails" or @menu_item.eql? "bounced_mails"
+    %div(style="display: inline-block;vertical-align: middle;")
+      %label Text
+      %input.span4(type="text" name="q" value="#{@q}" placeholder="Type something…")
   %div.input-append.date(data-date="#{@s||Time.now.strftime('%d/%m/%Y')}" data-date-format="dd-mm-yyyy")
     %label From
     %input.span2(size="16" type="text" name="s" value="#{@s}" placeholder="dd-mm-yyyy")
