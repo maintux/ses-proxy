@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'ses-proxy'
-  s.version     = '0.2.0'
+  s.version     = '0.2.1'
   s.date        = '2012-12-21'
   s.summary     = "SMTP Proxy for Amazon Simple Email Service with bounce and complaints support"
   s.authors     = ["Massimo Maino"]
