@@ -41,6 +41,13 @@ The second one (/home/user/.ses-proxy/ses-proxy.yml) contains the general config
     :smtp_auth:
       :user: smtp_user
       :password: smtp_pass
+    :http_auth:
+      -
+        :user: http_user_1
+        :password: http_password_1
+      -
+        :user: http_user_2
+        :password: http_password_2
     :test:
       :from: test@example.com
       :to: ["test@example.com"]
@@ -61,7 +68,7 @@ If your application is a Rails application, you can also use this gem [ses-proxy
 Then you have to setup your SES bounce and complaint notifications through SNS (Simple Notification Service) with a subscription that has "http://yourhost:port/sns_endpoint/" as endpoint. For more details see [AWS Documentation](http://docs.aws.amazon.com/ses/latest/DeveloperGuide/ConfiguringNotificationsSNS.html)
 This configuration allows ses-proxy to collect the email addresses which cause problems. When ses-proxy receives an email, checks if there are some blacklisted recipient, so as to be able to remove this addresses.
 
-Moreover you can see all the blacklisted address and all sent mails through a easy web application that is located at "http://yourhost:port". The basic HTTP Authentication uses the same SMTP credentials, defined in ses-proxy.yml file.
+Moreover you can see all the blacklisted address and all sent mails through a easy web application that is located at "http://yourhost:port". The basic HTTP Authentication uses the credentials defined in :http_auth section in ses-proxy.yml file.
 
 ###Stop command
 

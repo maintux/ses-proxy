@@ -6,6 +6,13 @@
 :smtp_auth:
   :user: smtp_user
   :password: smtp_pass
+:http_auth:
+  -
+    :user: http_user_1
+    :password: http_password_1
+  -
+    :user: http_user_2
+    :password: http_password_2
 :test:
   :from: test@example.com
   :to: ["test@example.com"]
