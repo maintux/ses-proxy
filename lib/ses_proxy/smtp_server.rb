@@ -2,6 +2,17 @@ require 'eventmachine'
 require 'mail'
 require 'aws-sdk'
 
+Mail.defaults do
+  delivery_method :smtp, { 
+    :address => 'email-smtp.us-east-1.amazonaws.com',
+    :port => '587',
+    :user_name => SesProxy::Conf.get[:aws][:access_key_id],
+    :password => SesProxy::Conf.get[:aws][:secret_access_key],
+    :authentication => :plain,
+    :enable_starttls_auto => true
+  }
+end
+
 module SesProxy
   class SmtpServer < EM::P::SmtpServer
 
@@ -64,7 +75,7 @@ module SesProxy
     def receive_message
       return false unless verified
       mail = Mail.read_from_string(message)
-      bounced = Bounce.where({:email=>{"$in"=>recipients|mail.cc_addrs|mail.bcc_addrs}}).map(&:email)
+      bounced = Bounce.where({:email=>{"$in"=>recipients}}).map(&:email)
       #TODO: Define policy for retry when bounce is not permanent
       actual_recipients = mail.to_addrs - bounced
       actual_cc_addrs = mail.cc_addrs - bounced
@@ -93,7 +104,8 @@ module SesProxy
         })
         record.save!
         begin
-          ses.send_raw_email(mail.to_s)
+          mail.deliver!
+          #ses.send_raw_email(mail.to_s)
         rescue Exception => e
           print "Error! "
           puts e.message
