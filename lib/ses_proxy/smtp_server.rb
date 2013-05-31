@@ -2,15 +2,17 @@ require 'eventmachine'
 require 'mail'
 require 'aws-sdk'
 
-Mail.defaults do
-  delivery_method :smtp, {
-    :address => 'email-smtp.us-east-1.amazonaws.com',
-    :port => '587',
-    :user_name => SesProxy::Conf.get[:aws][:ses][:username],
-    :password => SesProxy::Conf.get[:aws][:ses][:password],
-    :authentication => :plain,
-    :enable_starttls_auto => true
-  }
+if SesProxy::Conf.get[:aws][:ses] and SesProxy::Conf.get[:aws][:ses][:username] and SesProxy::Conf.get[:aws][:ses][:password]
+  Mail.defaults do
+    delivery_method :smtp, {
+      :address => 'email-smtp.us-east-1.amazonaws.com',
+      :port => '587',
+      :user_name => SesProxy::Conf.get[:aws][:ses][:username],
+      :password => SesProxy::Conf.get[:aws][:ses][:password],
+      :authentication => :plain,
+      :enable_starttls_auto => true
+    }
+  end
 end
 
 module SesProxy
