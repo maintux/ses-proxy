@@ -66,10 +66,10 @@ module SesProxy
       mail = Mail.read_from_string(message)
       bounced = Bounce.where({:email=>{"$in"=>recipients|mail.cc_addrs|mail.bcc_addrs}}).map(&:email)
       #TODO: Define policy for retry when bounce is not permanent
-      actual_recipients = recipients - bounced
+      actual_recipients = mail.to_addrs - bounced
       actual_cc_addrs = mail.cc_addrs - bounced
-      actual_bcc_addrs = mail.bcc_addrs - bounced
-      original_number = recipients.size+mail.cc_addrs.size+mail.bcc_addrs.size
+      actual_bcc_addrs = recipients - (mail.to_addrs + mail.cc_addrs) - bounced
+      original_number = recipients.size
       filtered_number = actual_recipients.size+actual_cc_addrs.size+actual_bcc_addrs.size
       record = RecipientsNumber.new({
         :original=>original_number,
@@ -79,7 +79,7 @@ module SesProxy
       })
       record.save!
       if actual_recipients.any?
-        mail.to = [actual_recipients - actual_bcc_addrs - actual_cc_addrs].uniq.join(",")
+        mail.to = actual_recipients.uniq.join(",")
         mail.cc = actual_cc_addrs.uniq.join(",")
         mail.bcc = actual_bcc_addrs.uniq.join(",")
         record = Email.new({
