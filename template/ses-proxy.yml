@@ -3,6 +3,9 @@
   :secret_access_key: your_secret_access_key
   :account_id: 000000000000
   :allowed_topic_arns: ["arn:aws:sns:us-east-1:123456789012:MyTopic"]
+  :ses:
+    :username: your_ses_smtp_username
+    :password: your_ses_smtp_password
 :smtp_auth:
   :user: smtp_user
   :password: smtp_pass
