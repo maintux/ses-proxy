@@ -79,7 +79,7 @@ module SesProxy
       })
       record.save!
       if actual_recipients.any?
-        mail.to = actual_recipients.uniq.join(",")
+        mail.to = [actual_recipients - actual_bcc_addrs - actual_cc_addrs].uniq.join(",")
         mail.cc = actual_cc_addrs.uniq.join(",")
         mail.bcc = actual_bcc_addrs.uniq.join(",")
         record = Email.new({
