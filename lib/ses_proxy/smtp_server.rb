@@ -79,9 +79,28 @@ module SesProxy
       mail = Mail.read_from_string(message)
       bounced = Bounce.where({:email=>{"$in"=>recipients}}).map(&:email)
       #TODO: Define policy for retry when bounce is not permanent
+
+      #Remove bounced addresses
       actual_recipients = mail.to_addrs - bounced
       actual_cc_addrs = mail.cc_addrs - bounced
       actual_bcc_addrs = recipients - (mail.to_addrs + mail.cc_addrs) - bounced
+
+      #Remove blacklisted domains
+      if SesProxy::Conf.get[:blacklisted_domains] and SesProxy::Conf.get[:blacklisted_domains].any?
+        bld = SesProxy::Conf.get[:blacklisted_domains]
+        actual_recipients.collect!{|address| address unless bld.include?(address.split('@').last)}.compact!
+        actual_cc_addrs.collect!{|address| address unless bld.include?(address.split('@').last)}.compact!
+        actual_bcc_addrs.collect!{|address| address unless bld.include?(address.split('@').last)}.compact!
+      end
+
+      #Remove blacklisted regexp
+      if SesProxy::Conf.get[:blacklisted_regexp] and SesProxy::Conf.get[:blacklisted_regexp].any?
+        blr = SesProxy::Conf.get[:blacklisted_regexp]
+        actual_recipients.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}}.compact!
+        actual_cc_addrs.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}}.compact!
+        actual_bcc_addrs.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}}.compact!
+      end
+
       original_number = recipients.size
       filtered_number = actual_recipients.size+actual_cc_addrs.size+actual_bcc_addrs.size
       record = RecipientsNumber.new({
@@ -95,16 +114,18 @@ module SesProxy
         mail.to = actual_recipients.uniq.join(",")
         mail.cc = actual_cc_addrs.uniq.join(",")
         mail.bcc = actual_bcc_addrs.uniq.join(",")
-        record = Email.new({
-          :sender => sender,
-          :recipients => actual_recipients.uniq.join(","),
-          :subject => mail.subject,
-          :body => mail.body.decoded,
-          :system => mail['X-Sender-System']||"Unknown",
-          :created_at => Time.now,
-          :updated_at => Time.now
-        })
-        record.save!
+        unless SesProxy::Conf.get[:collect_sent_mails].eql? false
+          record = Email.new({
+            :sender => sender,
+            :recipients => actual_recipients.uniq.join(","),
+            :subject => mail.subject,
+            :body => mail.body.decoded,
+            :system => mail['X-Sender-System']||"Unknown",
+            :created_at => Time.now,
+            :updated_at => Time.now
+          })
+          record.save!
+        end
         begin
           if SesProxy::Conf.get[:aws][:ses] and SesProxy::Conf.get[:aws][:ses][:username] and SesProxy::Conf.get[:aws][:ses][:password]
             mail.deliver!
@@ -120,19 +141,21 @@ module SesProxy
         puts "No valid recipients! #{mail.to_addrs}"
       end
       if not original_number.eql? filtered_number
-        mail.to = (recipients&bounced).uniq.join(",")
-        mail.cc = (mail.cc_addrs&bounced).uniq.join(",")
-        mail.bcc = (mail.bcc_addrs&bounced).uniq.join(",")
-        record = BouncedEmail.new({
-          :sender => sender,
-          :recipients => (recipients&bounced).uniq.join(","),
-          :subject => mail.subject,
-          :body => mail.body.decoded,
-          :system => mail['X-Sender-System']||"Unknown",
-          :created_at => Time.now,
-          :updated_at => Time.now
-        })
-        record.save!
+        unless SesProxy::Conf.get[:collect_bounced_mails].eql? false
+          mail.to = (recipients&bounced).uniq.join(",")
+          mail.cc = (mail.cc_addrs&bounced).uniq.join(",")
+          mail.bcc = (mail.bcc_addrs&bounced).uniq.join(",")
+          record = BouncedEmail.new({
+            :sender => sender,
+            :recipients => (recipients&bounced).uniq.join(","),
+            :subject => mail.subject,
+            :body => mail.body.decoded,
+            :system => mail['X-Sender-System']||"Unknown",
+            :created_at => Time.now,
+            :updated_at => Time.now
+          })
+          record.save!
+        end
       end
     end
 
