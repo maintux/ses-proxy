@@ -33,6 +33,14 @@ When you start ses\_proxy for the first time, two configuration files will be cr
 The first one is the configuration for MongoDB server (/home/user/.ses-proxy/mongoid.yml). You can edit it if your server runs on a different host.
 The second one (/home/user/.ses-proxy/ses-proxy.yml) contains the general configuration for ses\_proxy. The available options are the following:
 
+    :collect_sent_mails: true
+    :collect_bounced_mails: true
+    :blacklisted_domains:
+      - domain1.ltd
+      - domain2.ltd
+    :blacklisted_regexp:
+      - regexp1_pattern_without_delimiters
+      - regexp2_pattern_without_delimiters
     :aws:
       :access_key_id: your_access_key_id
       :secret_access_key: your_secret_access_key
