@@ -96,9 +96,9 @@ module SesProxy
       #Remove blacklisted regexp
       if SesProxy::Conf.get[:blacklisted_regexp] and SesProxy::Conf.get[:blacklisted_regexp].any?
         blr = SesProxy::Conf.get[:blacklisted_regexp]
-        actual_recipients.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}}.compact!
-        actual_cc_addrs.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}}.compact!
-        actual_bcc_addrs.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}}.compact!
+        actual_recipients.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}.compact.any? }.compact!
+        actual_cc_addrs.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}.compact.any? }.compact!
+        actual_bcc_addrs.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}.compact.any? }.compact!
       end
 
       original_number = recipients.size
