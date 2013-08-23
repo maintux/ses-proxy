@@ -157,6 +157,7 @@ module SesProxy
           record.save!
         end
       end
+      true
     end
 
     def receive_ehlo_domain(domain)
