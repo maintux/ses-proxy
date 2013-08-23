@@ -117,7 +117,7 @@ module SesProxy
           return false
         end
       else
-        puts "No valid recipients!"
+        puts "No valid recipients! #{mail.to_addrs}"
       end
       if not original_number.eql? filtered_number
         mail.to = (recipients&bounced).uniq.join(",")
