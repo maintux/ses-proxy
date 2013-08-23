@@ -86,7 +86,7 @@ module SesProxy
       actual_bcc_addrs = recipients - (mail.to_addrs + mail.cc_addrs) - bounced
 
       #Remove blacklisted domains
-      if SesProxy::Conf.get[:blacklisted_domains].any?
+      if SesProxy::Conf.get[:blacklisted_domains] and SesProxy::Conf.get[:blacklisted_domains].any?
         bld = SesProxy::Conf.get[:blacklisted_domains]
         actual_recipients.collect!{|address| address unless bld.include?(address.split('@').last)}.compact!
         actual_cc_addrs.collect!{|address| address unless bld.include?(address.split('@').last)}.compact!
@@ -94,7 +94,7 @@ module SesProxy
       end
 
       #Remove blacklisted regexp
-      if SesProxy::Conf.get[:blacklisted_regexp].any?
+      if SesProxy::Conf.get[:blacklisted_regexp] and SesProxy::Conf.get[:blacklisted_regexp].any?
         blr = SesProxy::Conf.get[:blacklisted_regexp]
         actual_recipients.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}}.compact!
         actual_cc_addrs.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}}.compact!
