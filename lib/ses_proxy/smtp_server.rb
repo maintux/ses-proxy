@@ -76,7 +76,7 @@ module SesProxy
 
     def receive_message
       return false unless verified
-      mail = Mail.read_from_string(message)
+      mail = Mail.read_from_string(message + "\n") #https://github.com/mikel/mail/issues/612#issuecomment-35564404
       bounced = Bounce.where({:email=>{"$in"=>recipients}}).map(&:email)
       #TODO: Define policy for retry when bounce is not permanent
 
@@ -119,7 +119,7 @@ module SesProxy
             :sender => sender,
             :recipients => actual_recipients.uniq.join(","),
             :subject => mail.subject,
-            :body => mail.body.decoded,
+            :body => mail.decode_body,
             :system => mail['X-Sender-System']||"Unknown",
             :created_at => Time.now,
             :updated_at => Time.now
@@ -149,7 +149,7 @@ module SesProxy
             :sender => sender,
             :recipients => (recipients&bounced).uniq.join(","),
             :subject => mail.subject,
-            :body => mail.body.decoded,
+            :body => mail.decode_body,
             :system => mail['X-Sender-System']||"Unknown",
             :created_at => Time.now,
             :updated_at => Time.now
