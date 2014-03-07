@@ -1,5 +1,6 @@
 :collect_sent_mails: true
 :collect_bounced_mails: true
+:raise_error_if_no_recipients: false
 :blacklisted_domains:
   - domain1.ltd
   - domain2.ltd

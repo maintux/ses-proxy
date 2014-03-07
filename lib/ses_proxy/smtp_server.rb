@@ -157,7 +157,11 @@ module SesProxy
           record.save!
         end
       end
-      true
+      if actual_recipients.empty? and SesProxy::Conf.get[:raise_error_if_no_recipients].eql?(true)
+        return [550, "Message rejected because of all recipients are bounced!"]
+      else
+        return true
+      end
     end
 
     def receive_ehlo_domain(domain)
@@ -181,5 +185,47 @@ module SesProxy
     def self.running?
       !!@server
     end
+
+    # Allow EM::Protocols::SmtpServer#receive_message to return an Array so that cases other than succeed/fail can be handled.
+    # If an Array is returned it is expected to have two elements, the response code and the message (e.g. [451, "Temp Failure"]).
+    # Does not break backward compatibility.
+    def process_data_line ln
+      if ln == "."
+        if @databuffer.length > 0
+          receive_data_chunk @databuffer
+          @databuffer.clear
+        end
+
+
+        succeeded = proc {
+          send_data "250 Message accepted\r\n"
+        }
+        failed = proc {
+          send_data "550 Message rejected\r\n"
+        }
+
+        d = receive_message
+
+        if d.respond_to?(:set_deferred_status)
+          d.callback(&succeeded)
+          d.errback(&failed)
+        elsif d.kind_of?(Array)
+          send_data d.join(' ') + "\r\n"
+        else
+          (d ? succeeded : failed).call
+        end
+
+        @state.delete :data
+      else
+        # slice off leading . if any
+        ln.slice!(0...1) if ln[0] == 46
+        @databuffer << ln
+        if @databuffer.length > @@parms[:chunksize]
+          receive_data_chunk @databuffer
+          @databuffer.clear
+        end
+      end
+    end
+
   end
 end
