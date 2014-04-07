@@ -114,6 +114,7 @@ module SesProxy
         mail.to = actual_recipients.uniq.join(",")
         mail.cc = actual_cc_addrs.uniq.join(",")
         mail.bcc = actual_bcc_addrs.uniq.join(",")
+        mail['X-SES-Proxy'] = 'True'
         unless SesProxy::Conf.get[:collect_sent_mails].eql? false
           record = Email.new({
             :sender => sender,
@@ -218,7 +219,7 @@ module SesProxy
         @state.delete :data
       else
         # slice off leading . if any
-        ln.slice!(0...1) if ln[0] == 46
+        ln.slice!(0...1) if ln[0] == ?.
         @databuffer << ln
         if @databuffer.length > @@parms[:chunksize]
           receive_data_chunk @databuffer
