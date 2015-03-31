@@ -6,10 +6,10 @@ if SesProxy::Conf.get[:aws][:ses] and SesProxy::Conf.get[:aws][:ses][:username] 
   Mail.defaults do
     delivery_method :smtp, {
       :address => 'email-smtp.us-east-1.amazonaws.com',
-      :port => '587',
+      :port => 587,
       :user_name => SesProxy::Conf.get[:aws][:ses][:username],
       :password => SesProxy::Conf.get[:aws][:ses][:password],
-      :authentication => :plain,
+      :authentication => :login,
       :enable_starttls_auto => true
     }
   end
@@ -33,15 +33,27 @@ module SesProxy
     def receive_sender(sender)
       sender = sender.gsub(/[<>]/,'')
       @sender = sender
-      domains = ses.identities.domains.map(&:identity)
-      email_addresses = ses.identities.email_addresses.map(&:identity)
-      identity = nil
-      if email_addresses.include?(sender)
-        identity = ses.identities[sender]
-      elsif domains.include?(sender.split('@').last)
-        identity = ses.identities[sender.split('@').last]
+      domains = VerifiedSender.where({:type=>'domain'}).map(&:ses_identity)
+      if domains.empty?
+        _domains = ses.identities.domains
+        _domains.each do |domain|
+          next unless domain.verified?
+          VerifiedSender.create({:ses_identity => domain.identity, :type => 'domain', :created_at => Time.now, :updated_at => Time.now})
+          domains << domain.identity
+        end
       end
-      identity&&identity.verified?
+      email_addresses = VerifiedSender.where({:type=>'email'}).map(&:ses_identity)
+      if email_addresses.empty?
+        _email_addresses = ses.identities.email_addresses
+        _email_addresses.each do |email_address|
+          next unless email_address.verified?
+          VerifiedSender.create({:ses_identity => email_address.identity, :type => 'email', :created_at => Time.now, :updated_at => Time.now})
+          email_addresses << email_address.identity
+        end
+      end
+      ok = (email_addresses.include?(sender) or domains.include?(sender.split('@').last))
+      puts "Invalid sender!" unless ok
+      return ok
     end
 
     def receive_recipient(recipient)
@@ -87,21 +99,23 @@ module SesProxy
       #Remove blacklisted domains
       if SesProxy::Conf.get[:blacklisted_domains] and SesProxy::Conf.get[:blacklisted_domains].any?
         bld = SesProxy::Conf.get[:blacklisted_domains]
-        actual_recipients.collect!{|address| address unless bld.include?(address.split('@').last)}.compact!
-        actual_cc_addrs.collect!{|address| address unless bld.include?(address.split('@').last)}.compact!
-        actual_bcc_addrs.collect!{|address| address unless bld.include?(address.split('@').last)}.compact!
+        _proc = proc {|address| address unless bld.include?(address.split('@').last)}
+        actual_recipients.collect!(&_proc).compact!
+        actual_cc_addrs.collect!(&_proc).compact!
+        actual_bcc_addrs.collect!(&_proc).compact!
       end
 
       #Remove blacklisted regexp
       if SesProxy::Conf.get[:blacklisted_regexp] and SesProxy::Conf.get[:blacklisted_regexp].any?
         blr = SesProxy::Conf.get[:blacklisted_regexp]
-        actual_recipients.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}.compact.any? }.compact!
-        actual_cc_addrs.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}.compact.any? }.compact!
-        actual_bcc_addrs.collect!{|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}.compact.any? }.compact!
+        _proc = proc {|address| address unless blr.map{|regexp| Regexp.new(regexp).match(address)}.compact.any? }
+        actual_recipients.collect!(&_proc).compact!
+        actual_cc_addrs.collect!(&_proc).compact!
+        actual_bcc_addrs.collect!(&_proc).compact!
       end
 
       original_number = recipients.size
-      filtered_number = actual_recipients.size+actual_cc_addrs.size+actual_bcc_addrs.size
+      filtered_number = actual_recipients.size + actual_cc_addrs.size + actual_bcc_addrs.size
       record = RecipientsNumber.new({
         :original=>original_number,
         :filtered=>filtered_number,
@@ -199,9 +213,11 @@ module SesProxy
 
         succeeded = proc {
           send_data "250 Message accepted\r\n"
+          reset_protocol_state
         }
         failed = proc {
           send_data "550 Message rejected\r\n"
+          reset_protocol_state
         }
 
         d = receive_message
@@ -211,6 +227,7 @@ module SesProxy
           d.errback(&failed)
         elsif d.kind_of?(Array)
           send_data d.join(' ') + "\r\n"
+          reset_protocol_state
         else
           (d ? succeeded : failed).call
         end

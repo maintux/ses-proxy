@@ -2,6 +2,7 @@ require 'sinatra'
 require 'haml'
 require 'kaminari/sinatra'
 require 'json'
+require 'aws-sdk'
 
 helpers do
   def protected!
@@ -145,6 +146,23 @@ get '/bounces.json' do
 
   content_type :json
   data.to_json
+end
+
+get "/refresh_senders" do
+  protected!
+  ses = ::AWS::SimpleEmailService.new(SesProxy::Conf.get[:aws])
+  SesProxy::VerifiedSender.collection.drop
+  _domains = ses.identities.domains
+  _domains.each do |domain|
+    next unless domain.verified?
+    SesProxy::VerifiedSender.create({:ses_identity => domain.identity, :type => 'domain', :created_at => Time.now, :updated_at => Time.now})
+  end
+  _email_addresses = ses.identities.email_addresses
+  _email_addresses.each do |email_address|
+    next unless email_address.verified?
+    SesProxy::VerifiedSender.create({:ses_identity => email_address.identity, :type => 'email', :created_at => Time.now, :updated_at => Time.now})
+  end
+  204
 end
 
 private

@@ -9,4 +9,5 @@ module SesProxy
   autoload :Email, 'ses_proxy/models/email'
   autoload :BouncedEmail, 'ses_proxy/models/bounced_email'
   autoload :RecipientsNumber, 'ses_proxy/models/recipients_number'
+  autoload :VerifiedSender, 'ses_proxy/models/verified_sender'
 end

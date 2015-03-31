@@ -67,7 +67,7 @@ module SesProxy
       Mongoid.load! mongoid_config_file, @@env
 
       app = Rack::Builder.new do
-        use Rack::Reloader, 0 if  @@env.eql?"development"
+        use Rack::Reloader, 0 if @@env.eql?"development"
         map "/sns_endpoint" do
           run SesProxy::SnsEndpoint.new
         end
