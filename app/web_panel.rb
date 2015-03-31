@@ -193,7 +193,7 @@ def mails_query
     if valid_date(@s) and valid_date(@e)
       mails = SesProxy::Email.where(:created_at=>{'$gte' => string_to_date(@s),'$lte' => string_to_date(@e)+1.day})
     else
-      mails = SesProxy::Email.all
+      mails = SesProxy::Email
     end
   else
     if valid_date(@s) and valid_date(@e)
@@ -212,7 +212,7 @@ def bounced_mails_query
     if valid_date(@s) and valid_date(@e)
       mails = SesProxy::BouncedEmail.where(:created_at=>{'$gte' => string_to_date(@s),'$lte' => string_to_date(@e)+1.day})
     else
-      mails = SesProxy::BouncedEmail.all
+      mails = SesProxy::BouncedEmail
     end
   else
     if valid_date(@s) and valid_date(@e)
@@ -229,7 +229,7 @@ def bounces_query
   if valid_date(@s) and valid_date(@e)
     bounces = SesProxy::Bounce.where(:created_at=>{'$gte' => string_to_date(@s),'$lte' => string_to_date(@e)+1.day})
   else
-    bounces = SesProxy::Bounce.all
+    bounces = SesProxy::Bounce
   end
   bounces
 end
