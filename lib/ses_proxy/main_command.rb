@@ -90,14 +90,14 @@ module SesProxy
         @smtp.start
         @http.start
       else
-        @smtp = Thread.new do
-          EM.run{ SesProxy::SmtpServer.start smtp_host, smtp_port }
-        end
-        @http = Thread.new do
+        EM.run do
+          SesProxy::SmtpServer.start smtp_host, smtp_port
           server.start
+          trap(:INT) {
+            SesProxy::SmtpServer.stop
+            EM.stop
+          }
         end
-        @smtp.join
-        @http.join
       end
     end
 
