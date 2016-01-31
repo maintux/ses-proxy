@@ -4,6 +4,7 @@ require 'aws-sdk'
 require 'net/http'
 require 'base64'
 require 'openssl'
+require 'active_support/all'
 
 module SesProxy
   class SnsEndpoint
@@ -47,7 +48,7 @@ module SesProxy
                   record.count += 1
                   if record.count >= 2
                     record.retry_at ||= Time.now
-                    record.retry_at = record.retry_at.to_time + ((2 ** (record.count - 2)) * 7)
+                    record.retry_at = record.retry_at.to_time + ((2 ** (record.count - 2)) * 7).days
                   end
                   record.updated_at = Time.now
                   record.save!
