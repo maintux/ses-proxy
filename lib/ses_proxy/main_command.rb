@@ -65,6 +65,13 @@ module SesProxy
 
       @@env = environment
       Mongoid.load! mongoid_config_file, @@env
+      if @@env.eql?"development"
+        Mongoid.logger.level = Logger::DEBUG
+        Mongo::Logger.logger.level = Logger::DEBUG
+      else
+        Mongoid.logger.level = Logger::INFO
+        Mongo::Logger.logger.level = Logger::INFO
+      end
 
       app = Rack::Builder.new do
         use Rack::Reloader, 0 if @@env.eql?"development"
