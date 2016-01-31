@@ -76,6 +76,7 @@ module SesProxy
       options = {:app=>app, :environment=>environment, :server=>"thin", :Port=>http_port, :Host=>http_address}
       server = Rack::Server.new options
 
+      SesProxy::SmtpServer.parms = {:auth => :required}
       if demonize?
         options = {:app_name => "ses_proxy", :dir_mode=>:normal, :dir=>pid_dir, :multiple=>true}
         group = Daemons::ApplicationGroup.new('ses_proxy', options)
