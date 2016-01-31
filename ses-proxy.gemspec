@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'json'
   s.add_dependency 'rack'
   s.add_dependency 'thin'
-  s.add_dependency 'aws-sdk'
+  s.add_dependency 'aws-sdk', '1.66.0'
   s.add_dependency 'mail'
   s.add_dependency 'eventmachine'
   s.add_dependency 'mongoid'
@@ -22,4 +22,8 @@ Gem::Specification.new do |s|
   s.add_dependency 'sinatra'
   s.add_dependency 'kaminari'
   s.add_dependency 'padrino-helpers'
+  s.add_dependency 'daemons'
+  s.add_dependency 'actionpack', '3.2.16'
 end
+
+
