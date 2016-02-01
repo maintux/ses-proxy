@@ -88,14 +88,14 @@ module SesProxy
 
       SesProxy::SmtpServer.parms = {:auth => :required}
       if demonize?
-        options = {:app_name => "ses_proxy", :dir_mode=>:normal, :dir=>pid_dir, :multiple=>true}
+        options = {:app_name => "ses_proxy", :dir_mode=>:normal, :dir=>pid_dir}
         group = Daemons::ApplicationGroup.new('ses_proxy', options)
         options[:mode] = :proc
         options[:proc] = Proc.new { EM.run{ SesProxy::SmtpServer.start smtp_host, smtp_port } }
-        pid = Daemons::PidFile.new pid_dir, "ses_proxy_smtp"
+        pid = Daemons::PidFile.new pid_dir, "ses_proxy_num.0"
         @smtp = Daemons::Application.new(group, options, pid)
         options[:proc] = Proc.new { server.start }
-        pid = Daemons::PidFile.new pid_dir, "ses_proxy_http"
+        pid = Daemons::PidFile.new pid_dir, "ses_proxy_num.1"
         @http = Daemons::Application.new(group, options, pid)
         @smtp.start
         @http.start
