@@ -45,7 +45,7 @@ get '/' do
   @per = params[:per] || 20
   mails = mails_query
   @mails = mails.page(params[:page]).per(@per)
-  haml :mails
+  haml :mails, :layout => "layout"
 end
 
 get '/mails.json' do
@@ -78,7 +78,7 @@ get '/bounced_mails' do
   @per = params[:per] || 20
   mails = bounced_mails_query
   @mails = mails.page(params[:page]).per(@per)
-  haml :mails
+  haml :mails, :layout => "layout"
 end
 
 get '/bounced_mails.json' do
@@ -112,7 +112,7 @@ get '/bounces' do
   @per = params[:per] || 20
   bounces = bounces_query
   @bounces = bounces.page(params[:page]).per(@per)
-  haml :bounces
+  haml :bounces, :layout => "layout"
 end
 
 get '/bounces.json' do
@@ -151,17 +151,7 @@ end
 get "/refresh_senders" do
   protected!
   ses = ::AWS::SimpleEmailService.new(SesProxy::Conf.get[:aws])
-  SesProxy::VerifiedSender.collection.drop
-  _domains = ses.identities.domains
-  _domains.each do |domain|
-    next unless domain.verified?
-    SesProxy::VerifiedSender.create({:ses_identity => domain.identity, :type => 'domain', :created_at => Time.now, :updated_at => Time.now})
-  end
-  _email_addresses = ses.identities.email_addresses
-  _email_addresses.each do |email_address|
-    next unless email_address.verified?
-    SesProxy::VerifiedSender.create({:ses_identity => email_address.identity, :type => 'email', :created_at => Time.now, :updated_at => Time.now})
-  end
+  SesProxy::VerifiedSender.update_identities(ses.client)
   204
 end
 
