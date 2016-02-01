@@ -67,8 +67,10 @@ module SesProxy
       Mongoid.load! mongoid_config_file, @@env
       if @@env.eql?"development"
         Mongoid.logger.level = Logger::DEBUG
+        Mongo::Logger.logger.level = Logger::DEBUG if defined?(Mongo)
       else
         Mongoid.logger.level = Logger::INFO
+        Mongo::Logger.logger.level = Logger::INFO if defined?(Mongo)
       end
 
       ses = AWS::SimpleEmailService.new(SesProxy::Conf.get[:aws])
