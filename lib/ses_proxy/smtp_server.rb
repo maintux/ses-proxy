@@ -34,22 +34,11 @@ module SesProxy
       sender = sender.gsub(/[<>]/,'')
       @sender = sender
       domains = VerifiedSender.where({:type=>'domain'}).map(&:ses_identity)
-      if domains.empty?
-        _domains = ses.identities.domains
-        _domains.each do |domain|
-          next unless domain.verified?
-          VerifiedSender.create({:ses_identity => domain.identity, :type => 'domain', :created_at => Time.now, :updated_at => Time.now})
-          domains << domain.identity
-        end
-      end
       email_addresses = VerifiedSender.where({:type=>'email'}).map(&:ses_identity)
-      if email_addresses.empty?
-        _email_addresses = ses.identities.email_addresses
-        _email_addresses.each do |email_address|
-          next unless email_address.verified?
-          VerifiedSender.create({:ses_identity => email_address.identity, :type => 'email', :created_at => Time.now, :updated_at => Time.now})
-          email_addresses << email_address.identity
-        end
+      if domains.empty? or email_addresses.empty?
+        resp = VerifiedSender.update_identities ses.client
+        domains = resp[:domains].map(&:ses_identity)
+        email_addresses = resp[:emails].map(&:ses_identity)
       end
       ok = (email_addresses.include?(sender) or domains.include?(sender.split('@').last))
       puts "Invalid sender!" unless ok
