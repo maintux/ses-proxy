@@ -1,12 +1,12 @@
-#Ses Proxy
+# Ses Proxy - NOTE: This project is no longer maintained.
 
 SMTP Proxy for Amazon Simple Email Service with bounce and complaints support
 
-##Installation
+## Installation
 
     gem install ses-proxy
 
-##Usage
+## Usage
 
     ses_proxy [OPTIONS] SUBCOMMAND [ARGS] ...
 
@@ -14,7 +14,7 @@ SMTP Proxy for Amazon Simple Email Service with bounce and complaints support
         start                         Start proxy
         stop                          Stop proxy
 
-###Start command
+### Start command
 
     ses_proxy start [OPTIONS]
 
@@ -78,11 +78,11 @@ This configuration allows ses-proxy to collect the email addresses which cause p
 
 Moreover you can see all the blacklisted address and all sent mails through a easy web application that is located at "http://yourhost:port". The basic HTTP Authentication uses the credentials defined in :http_auth section in ses-proxy.yml file.
 
-###Stop command
+### Stop command
 
 This command has effect only if you start ses\_proxy like a daemon.
 
-##Contributing to ses-proxy
+## Contributing to ses-proxy
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
@@ -92,7 +92,7 @@ This command has effect only if you start ses\_proxy like a daemon.
 * Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 
-##License
+## License
 
 (The MIT License)
 
